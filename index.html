@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snowfall total map</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    
+    <style>
+		@font-face {
+		font-family:"effra";
+		src:url("https://use.typekit.net/af/bc093c/00000000000000007735fd41/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff2"),url("https://use.typekit.net/af/bc093c/00000000000000007735fd41/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff"),url("https://use.typekit.net/af/bc093c/00000000000000007735fd41/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("opentype");
+		font-display:auto;font-style:normal;font-weight:400;font-stretch:normal;
+		}
+
+		@font-face {
+		font-family:"effra";
+		src:url("https://use.typekit.net/af/c0864f/00000000000000007735fd3d/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff2"),url("https://use.typekit.net/af/c0864f/00000000000000007735fd3d/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff"),url("https://use.typekit.net/af/c0864f/00000000000000007735fd3d/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("opentype");
+		font-display:auto;font-style:normal;font-weight:700;font-stretch:normal;
+		}
+
+		@font-face {
+		font-family: "effra";
+		src: url("https://use.typekit.net/af/[font-id]/00000000000000007735fd[xx]/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i4&v=3") format("woff2"),
+			url("https://use.typekit.net/af/[font-id]/00000000000000007735fd[xx]/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i4&v=3") format("woff"),
+			url("https://use.typekit.net/af/[font-id]/00000000000000007735fd[xx]/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i4&v=3") format("opentype");
+		font-display: auto;
+		font-style: italic;
+		font-weight: 400;
+		font-stretch: normal;
+		}
+
+		@font-face {
+		font-family: 'Effra-Regular';
+		src: local('effra');
+		font-weight: 400;
+		font-style: normal;
+		}
+    
+		@font-face {
+		font-family: 'Effra-Bold';
+		src: local('effra');
+		font-weight: 700;
+		font-style: normal;
+		}
+
+        @font-face {
+		font-family: 'Effra';
+		src: local('effra');
+		font-weight: 400;
+		font-style: italic;
+		}
+
+		@font-face {
+		font-family: 'Effra-Italic';
+		src: local('effra');
+		font-weight: 400;
+		font-style: italic;
+	}
+
+	</style>
+
+    <style>
+    .source-sans-3-light {
+        font-family: "Source Sans 3", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: 300;
+        font-style: normal;
+    }
+
+    .source-sans-3-regular {
+        font-family: "Source Sans 3", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    .source-sans-3-bold {
+        font-family: "Source Sans 3", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: 700;
+        font-style: normal;
+    }
+    </style>
+
+    <style>
+        body {
+            padding: 0;
+            color: #333;
+            font-family: 'Effra', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        #map {
+            height: 800px;
+            width: 100%;
+        }
+        
+        .info-panel {
+            /* position: relative; */
+            /* max-width: 300px; */
+            left: 10px;
+            bottom: 30px;
+            /* background: whitesmoke; */
+            color: #333;
+            /* opacity: 0.7;
+            padding: 10px;
+            border-radius: 5px; */
+            z-index: 1000;
+        }
+        
+        .legend {
+            color: #333;
+            z-index: 1000;
+            max-width: 300px;
+            position: absolute;
+            top: 700px;
+            left: 30px;
+            font-size: 1.125rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            /* margin: 2px 0; */
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 12px;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+
+        .footnote {
+            position: relative;
+        }
+
+        .footnote p {
+            margin: 5px 0;
+            font-size: 1rem;
+            color: #333;
+            opacity: 0.8;;
+        }
+        .info-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+        
+    
+        @media (max-width: 600px) {
+            .legend {
+                font-size: 0.875rem;
+                top: 650px;
+            }
+
+            .legend-color {
+                width: 15px;
+                height: 10px;
+            }
+
+            .footnote {
+                position: relative;
+                top: auto;
+                left: auto;
+                width: 100%;
+                max-width: none;
+            }
+        }
+
+    
+    </style>
+</head>
+
+<body>
+    <h1>How much snow fell in your area?</h1>
+    <div class="legend">
+        <div><strong>Likelihood of Aurora</strong></div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ff1fa3;"></div>
+            <span>More than 2 feet</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #363b84;"></div>
+            <span>20+ inches</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #5a71bc;"></div>
+            <span>More than a foot</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #99aedb;"></div>
+            <span>6+ inches</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #aed0eb;"></div>
+            <span>More than an inch</span>
+        </div>
+    </div>
+    <div id="map"></div>
+   
+
+    <div class="footnote">
+        <!-- <div class="info-panel">
+            <i><div id="generationTime">Loading...</div></i>
+        </div> -->
+        <i><p id="generationTime">Loading...</p></i>
+        <p>Map: Katrina Ventura/Get the Facts Data Team •  Source: <a href="https://www.nohrsc.noaa.gov/snowfall_v2/" target="_blank">NWS National Gridded Snowfall Analysis</p>
+    </div>
+
+    <!-- Leaflet scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.min.js"></script>
+
+
+    <script>
+        const map = L.map('map', {
+            center: [40, -95], // Center on US
+            zoom: 4.5,
+            minZoom: 3,
+            maxZoom: 10
+        });
+    
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            maxZoom: 20,
+            subdomains: 'abcd'
+        }).addTo(map);
+    
+        let snowfall = L.layerGroup().addTo(map);
+    
+        function loadGeoJSON(geoJsonData) {
+            snowfall.clearLayers();
+            
+            let pointCount = 0;
+    
+            if (geoJsonData.features) {
+                geoJsonData.features.forEach(feature => {
+                    const coords = feature.geometry.coordinates;
+                    const amount = feature.properties.amount;
+                    const location = feature.properties.location;
+                    const state = feature.properties.state;
+                    const color = feature.properties.color;
+                    const time = feature.properties.valid_time;
+                    const lat = coords[1];
+                    const lon = coords[0];
+
+                    const formattedTime = new Date(time * 1000).toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true,
+                        timeZone: 'America/New_York'
+                    });
+                    console.log(`Valid time: ${formattedTime}`);
+
+                    const directions =  ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 
+                    'NNE', 'ENE', 'ESE', 'SSE', 'SSW', 'WSW', 'WNW', 'NNW'];
+
+                    const pattern1 = new RegExp(`^\\d+\\s+(${directions.join('|')})\\s+`, 'i');
+                    let cleanLocation = location.replace(pattern1, '');
+
+                    const pattern2 = new RegExp(`\\b(${directions.join('|')})\\b\\s*`, 'gi');
+                    cleanLocation = cleanLocation.replace(pattern2, '');
+
+                    const formattedLocation = cleanLocation.replace(/\b\w/g, char => char.toUpperCase());
+
+                    console.log(`Formatted location: ${formattedLocation}`);
+
+
+                    const colorGradient = 
+                    amount < 1 ? '#d9f5fc' :
+                    amount <= 6 ? '#aed0eb' :
+                    amount < 12 ? '#99aedb' :
+                    amount <= 20 ? '#5a71bc' :
+                    amount <= 24 ? '#363b84' :
+                    amount <= 30 ? '#ff1fa3' :
+                    '#d9f5fc';
+
+    
+                    let marker = L.circleMarker([lat, lon], {
+                        radius: 6,
+                        fillColor: colorGradient,
+                        color: colorGradient,
+                        weight: 1,
+                        opacity: 0.5,
+                        fillOpacity: 0.5
+                    });    
+
+
+
+    
+                    marker.bindPopup(`<strong>${formattedLocation}, ${state}</strong>
+                    <br/>Snowfall: ${amount} ${amount >= 1 ? 'inches' : 'inch'}
+                    <br/>Time: ${formattedTime}
+                    `);
+                    marker.addTo(snowfall);
+                    pointCount++;
+                });
+            }
+    
+            console.log(`Loaded ${pointCount} snowfall points.`);
+        }
+    
+        function loadData() {
+            fetch('https://www.weather.gov/source/crh/lsr_snow.geojson')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Raw API data:', data);
+                    loadGeoJSON(data);
+                    
+                    // Update generation time
+                    const generationTime = new Date(data.generation_time);
+                    const formattedTime = generationTime.toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: 'America/New_York',
+                        timeZoneName: 'short'
+                    });
+                    document.getElementById('generationTime').textContent = `Data as of ${formattedTime}`;
+
+                })
+                .catch(error => {
+                    console.error('Error loading data:', error);
+                    document.getElementById('dataTime').textContent = 'Data unavailable';
+                });
+        }
+    
+        // Load data when page loads
+        loadData();
+        
+        // Auto-refresh every 15 minutes
+        setInterval(loadData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
