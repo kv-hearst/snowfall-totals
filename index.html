@@ -6,8 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snowfall total map</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     
     <style>
 		@font-face {
@@ -151,7 +149,7 @@
             flex-direction: row;
             justify-content: space-between;
         }
-        
+
     
         @media (max-width: 600px) {
             .legend {
@@ -179,8 +177,9 @@
 
 <body>
     <h1>How much snow fell in your area?</h1>
+
     <div class="legend">
-        <div><strong>Likelihood of Aurora</strong></div>
+        <div><strong>Amount of snowfall</strong></div>
         <div class="legend-item">
             <div class="legend-color" style="background: #ff1fa3;"></div>
             <span>More than 2 feet</span>
@@ -202,16 +201,14 @@
             <span>More than an inch</span>
         </div>
     </div>
+
     <div id="map"></div>
    
-
     <div class="footnote">
-        <!-- <div class="info-panel">
-            <i><div id="generationTime">Loading...</div></i>
-        </div> -->
         <i><p id="generationTime">Loading...</p></i>
         <p>Map: Katrina Ventura/Get the Facts Data Team •  Source: <a href="https://www.nohrsc.noaa.gov/snowfall_v2/" target="_blank">NWS National Gridded Snowfall Analysis</p>
     </div>
+
 
     <!-- Leaflet scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -295,9 +292,6 @@
                         fillOpacity: 0.5
                     });    
 
-
-
-    
                     marker.bindPopup(`<strong>${formattedLocation}, ${state}</strong>
                     <br/>Snowfall: ${amount} ${amount >= 1 ? 'inches' : 'inch'}
                     <br/>Time: ${formattedTime}
@@ -309,6 +303,7 @@
     
             console.log(`Loaded ${pointCount} snowfall points.`);
         }
+
     
         function loadData() {
             fetch('https://www.weather.gov/source/crh/lsr_snow.geojson')
@@ -338,9 +333,10 @@
                 })
                 .catch(error => {
                     console.error('Error loading data:', error);
-                    document.getElementById('dataTime').textContent = 'Data unavailable';
+                    document.getElementById('generationTime').textContent = 'Data unavailable';
                 });
         }
+
     
         // Load data when page loads
         loadData();
