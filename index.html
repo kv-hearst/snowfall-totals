@@ -109,7 +109,7 @@
         .header {
             font-family: 'Effra-Bold', sans-serif;
             margin-bottom: 5px;
-            line-height: 0.8;
+            line-height: 1.2;
         }
         
         .legend {
@@ -210,8 +210,13 @@
         }
     
         @media (max-width: 600px) {
+            #map {
+            height: 500px;
+            
+        }
             .legend {
                 font-size: 1rem;
+                top: 580px;
               
             }
 
@@ -228,10 +233,21 @@
                 max-width: none;
             }
 
+            #leaflet-slider {
+                width: 150px;
+                
+            }
+
             .slider {
                 top: 3%;
                 bottom: 0px;
                 left: 50px;
+                transform: scale(0.8);
+               
+            }
+            .footnote p {
+        
+                font-size: 0.875rem;
             }
         }
     </style>
