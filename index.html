@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snowfall total map</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     
     <style>
 		@font-face {
@@ -99,16 +100,16 @@
         }
         
         .info-panel {
-            /* position: relative; */
-            /* max-width: 300px; */
             left: 10px;
             bottom: 30px;
-            /* background: whitesmoke; */
             color: #333;
-            /* opacity: 0.7;
-            padding: 10px;
-            border-radius: 5px; */
             z-index: 1000;
+        }
+
+        .header {
+            font-family: 'Effra-Bold', sans-serif;
+            margin-bottom: 5px;
+            line-height: 0.8;
         }
         
         .legend {
@@ -116,7 +117,7 @@
             z-index: 1000;
             max-width: 300px;
             position: absolute;
-            top: 700px;
+            top: 800px;
             left: 30px;
             font-size: 1.125rem;
         }
@@ -124,14 +125,20 @@
         .legend-item {
             display: flex;
             align-items: center;
-            /* margin: 2px 0; */
         }
         
-        .legend-color {
-            width: 20px;
-            height: 12px;
-            margin-right: 8px;
-            border-radius: 2px;
+        .legend-gradient-bar {
+            width: 100%;
+            height: 15px;
+            margin: 10px 0 5px 0;
+            background: linear-gradient(to right,
+                #d9f5fc 0%,
+                #aed0eb 10%,
+                #99aedb 30%,
+                #5a71bc 50%,
+                #363b84 70%,
+                #ff1fa3 100%);
+            border: 1px solid #ccc;
         }
 
         .footnote {
@@ -142,14 +149,58 @@
             margin: 5px 0;
             font-size: 1rem;
             color: #333;
-            opacity: 0.8;;
+            opacity: 0.8;
         }
+        
         .info-container {
             display: flex;
             flex-direction: row;
             justify-content: space-between;
         }
 
+        /* Slider styles */
+        .slider {
+            position: absolute;
+            top: 3px;
+            left: 50px;
+            bottom: 0px;
+            z-index: 1000;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        #leaflet-slider {
+            width: 300px;
+
+        }
+
+        #slider-timestamp {
+            width: 300px;
+            background-color: transparent;
+            text-align: left;
+            border-radius: 5px;
+            padding: 13px;
+            font-size: 1rem;
+        }
+
+        .ui-slider-handle {
+            width: 14px !important;
+            height: 14px !important;
+            border-radius: 50% !important;
+            background: #5a71bc !important;
+        }
+
+        .ui-slider {
+            background: #ddd !important;
+            border: none !important;
+            /* height: 6px !important; */
+        }
+
+        .ui-slider-range {
+            background: #5a71bc !important;
+        }
     
         @media (max-width: 600px) {
             .legend {
@@ -169,36 +220,31 @@
                 width: 100%;
                 max-width: none;
             }
-        }
 
-    
+            .slider {
+                top: 3%;
+                bottom: 0px;
+                left: 50px;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <h1>How much snow fell in your area?</h1>
+    <div class="header">
+        <h1>How much snow fell in your area?</h1>
+        <p>Click a dot to see the amount of reported snowfall.</p>  
+    </div>
 
     <div class="legend">
-        <div><strong>Amount of snowfall</strong></div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: #ff1fa3;"></div>
-            <span>More than 2 feet</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: #363b84;"></div>
-            <span>20+ inches</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: #5a71bc;"></div>
-            <span>More than a foot</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: #99aedb;"></div>
-            <span>6+ inches</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: #aed0eb;"></div>
-            <span>More than an inch</span>
+        <div><strong>Snowfall inches</strong></div>
+        <div class="legend-gradient-bar"></div>
+        <div class="legend-labels">
+            <span>1"</span>
+            <span>6"</span>
+            <span>12"</span>
+            <span>20"</span>
+            <span>24"+</span>
         </div>
     </div>
 
@@ -206,20 +252,179 @@
    
     <div class="footnote">
         <i><p id="generationTime">Loading...</p></i>
-        <p>Map: Katrina Ventura/Get the Facts Data Team •  Source: <a href="https://www.nohrsc.noaa.gov/snowfall_v2/" target="_blank">NWS National Gridded Snowfall Analysis</p>
+        <p>Map: Katrina Ventura/Get the Facts Data Team •  Source: <a href="https://www.nohrsc.noaa.gov/snowfall_v2/" target="_blank">NWS National Gridded Snowfall Analysis</a></p>
     </div>
 
-
+    <!-- jQuery and jQuery UI -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    
     <!-- Leaflet scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.min.js"></script>
-
 
     <script>
+        // Leaflet Slider Control
+        L.Control.SliderControl = L.Control.extend({
+            options: {
+                position: 'topleft',
+                layer: null,
+                timeAttribute: 'valid_time',
+                isEpoch: true,
+                startTimeIdx: 0,
+                timeStrLength: 19,
+                maxValue: -1,
+                minValue: 0,
+                showAllOnStart: false,
+                markers: null,
+                range: false,
+                follow: false,
+                sameDate: false,
+                alwaysShowDate: true,
+                rezoom: null
+            },
+
+            initialize: function (options) {
+                L.Util.setOptions(this, options);
+                this._layer = this.options.layer;
+            },
+
+            extractTimestamp: function(time, options) {
+                if (options.isEpoch) {
+                    const date = new Date(parseInt(time) * 1000);
+                    return date.toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true,
+                        timeZone: 'America/New_York'
+                    });
+                }
+                return time.substr(options.startTimeIdx, options.startTimeIdx + options.timeStrLength);
+            },
+
+            setPosition: function (position) {
+                var map = this._map;
+                if (map) {
+                    map.removeControl(this);
+                }
+                this.options.position = position;
+                if (map) {
+                    map.addControl(this);
+                }
+                this.startSlider();
+                return this;
+            },
+
+            onAdd: function (map) {
+                this.options.map = map;
+
+                var sliderContainer = L.DomUtil.create('div', 'slider', this._container);
+                $(sliderContainer).append('<div id="leaflet-slider"><div class="ui-slider-handle"></div><div id="slider-timestamp"></div></div>');
+
+                // var sliderContainer = L.DomUtil.create('div', 'slider', this._container);
+                // $(sliderContainer).append('<div id="leaflet-slider" style="width:300px"><div class="ui-slider-handle"></div><div id="slider-timestamp" style="width:300px; margin-top:3px; margin-bottom:0px; background-color:transparent; text-align:left; border-radius:5px;"></div></div>');
+                
+                $(sliderContainer).mousedown(function () {
+                    map.dragging.disable();
+                });
+                
+                $(document).mouseup(function () {
+                    map.dragging.enable();
+                });
+
+                var options = this.options;
+                this.options.markers = [];
+
+                if (this._layer) {
+                    var index_temp = 0;
+                    this._layer.eachLayer(function (layer) {
+                        options.markers[index_temp] = layer;
+                        ++index_temp;
+                    });
+                    options.maxValue = index_temp - 1;
+                    this.options = options;
+                } else {
+                    console.log("Error: You have to specify a layer via new SliderControl({layer: your_layer});");
+                }
+                return sliderContainer;
+            },
+
+            onRemove: function (map) {
+                for (var i = this.options.minValue; i <= this.options.maxValue; i++) {
+                    if (this.options.markers[i]) {
+                        map.removeLayer(this.options.markers[i]);
+                    }
+                }
+                $('#leaflet-slider').remove();
+                $(document).off("mouseup");
+                $(".slider").off("mousedown");
+            },
+
+            startSlider: function () {
+                var _options = this.options;
+                var _extractTimestamp = this.extractTimestamp;
+                var index_start = _options.minValue;
+                
+                if(_options.showAllOnStart){
+                    index_start = _options.maxValue;
+                    if(_options.range) _options.values = [_options.minValue,_options.maxValue];
+                    else _options.value = _options.maxValue;
+                }
+                
+                $("#leaflet-slider").slider({
+                    range: _options.range,
+                    value: _options.value,
+                    values: _options.values,
+                    min: _options.minValue,
+                    max: _options.maxValue,
+                    step: 1,
+                    slide: function (e, ui) {
+                        var map = _options.map;
+                        
+                        if(!!_options.markers[ui.value]) {
+                            if(_options.markers[ui.value].feature !== undefined) {
+                                if(_options.markers[ui.value].feature.properties[_options.timeAttribute]){
+                                    $('#slider-timestamp').html(
+                                        _extractTimestamp(_options.markers[ui.value].feature.properties[_options.timeAttribute], _options));
+                                }
+                            }
+
+                            var i;
+                            for (i = _options.minValue; i <= _options.maxValue; i++) {
+                                if(_options.markers[i]) map.removeLayer(_options.markers[i]);
+                            }
+                            
+                            for (i = _options.minValue; i <= ui.value ; i++) {
+                                if(_options.markers[i]) {
+                                    map.addLayer(_options.markers[i]);
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                if (!_options.range && _options.alwaysShowDate && _options.markers[index_start]) {
+                    if (_options.markers[index_start].feature !== undefined) {
+                        $('#slider-timestamp').html(_extractTimestamp(_options.markers[index_start].feature.properties[_options.timeAttribute], _options));
+                    }
+                }
+                
+                for (var i = _options.minValue; i <= index_start; i++) {
+                    if (_options.markers[i]) {
+                        _options.map.addLayer(_options.markers[i]);
+                    }
+                }
+            }
+        });
+
+        L.control.sliderControl = function (options) {
+            return new L.Control.SliderControl(options);
+        };
+
+        // Main map code
         const map = L.map('map', {
-            center: [40, -95], // Center on US
+            center: [40, -95],
             zoom: 4.5,
             minZoom: 3,
             maxZoom: 10
@@ -231,20 +436,30 @@
             subdomains: 'abcd'
         }).addTo(map);
     
-        let snowfall = L.layerGroup().addTo(map);
+        let snowfallLayer = L.layerGroup().addTo(map);
+        let sliderControl;
     
         function loadGeoJSON(geoJsonData) {
-            snowfall.clearLayers();
+            snowfallLayer.clearLayers();
             
-            let pointCount = 0;
+            if (sliderControl) {
+                map.removeControl(sliderControl);
+            }
+            
+            let sortedFeatures = [];
     
             if (geoJsonData.features) {
-                geoJsonData.features.forEach(feature => {
+                // Sort features by time
+                sortedFeatures = geoJsonData.features.sort((a, b) => 
+                    a.properties.valid_time - b.properties.valid_time
+                );
+
+                // Create markers for each feature
+                sortedFeatures.forEach(feature => {
                     const coords = feature.geometry.coordinates;
                     const amount = feature.properties.amount;
                     const location = feature.properties.location;
                     const state = feature.properties.state;
-                    const color = feature.properties.color;
                     const time = feature.properties.valid_time;
                     const lat = coords[1];
                     const lon = coords[0];
@@ -257,10 +472,9 @@
                         hour12: true,
                         timeZone: 'America/New_York'
                     });
-                    console.log(`Valid time: ${formattedTime}`);
 
-                    const directions =  ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 
-                    'NNE', 'ENE', 'ESE', 'SSE', 'SSW', 'WSW', 'WNW', 'NNW'];
+                    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 
+                        'NNE', 'ENE', 'ESE', 'SSE', 'SSW', 'WSW', 'WNW', 'NNW'];
 
                     const pattern1 = new RegExp(`^\\d+\\s+(${directions.join('|')})\\s+`, 'i');
                     let cleanLocation = location.replace(pattern1, '');
@@ -270,19 +484,15 @@
 
                     const formattedLocation = cleanLocation.replace(/\b\w/g, char => char.toUpperCase());
 
-                    console.log(`Formatted location: ${formattedLocation}`);
-
-
                     const colorGradient = 
-                    amount < 1 ? '#d9f5fc' :
-                    amount <= 6 ? '#aed0eb' :
-                    amount < 12 ? '#99aedb' :
-                    amount <= 20 ? '#5a71bc' :
-                    amount <= 24 ? '#363b84' :
-                    amount <= 30 ? '#ff1fa3' :
-                    '#d9f5fc';
+                        amount < 1 ? '#d9f5fc' :
+                        amount <= 6 ? '#aed0eb' :
+                        amount < 12 ? '#99aedb' :
+                        amount <= 20 ? '#5a71bc' :
+                        amount <= 24 ? '#363b84' :
+                        amount <= 30 ? '#ff1fa3' :
+                        '#d9f5fc';
 
-    
                     let marker = L.circleMarker([lat, lon], {
                         radius: 6,
                         fillColor: colorGradient,
@@ -290,21 +500,34 @@
                         weight: 1,
                         opacity: 0.5,
                         fillOpacity: 0.5
-                    });    
+                    });
+
+                    marker.feature = feature;
 
                     marker.bindPopup(`<strong>${formattedLocation}, ${state}</strong>
-                    <br/>Snowfall: ${amount} ${amount >= 1 ? 'inches' : 'inch'}
-                    <br/>Time: ${formattedTime}
+                        <br/>Snowfall: ${amount} ${amount >= 1 ? 'inches' : 'inch'}
+                        <br/>Time: ${formattedTime}
                     `);
-                    marker.addTo(snowfall);
-                    pointCount++;
+                    
+                    snowfallLayer.addLayer(marker);
                 });
+
+                console.log(`Loaded ${sortedFeatures.length} snowfall points.`);
+
+                // Add slider control
+                sliderControl = L.control.sliderControl({
+                    layer: snowfallLayer,
+                    timeAttribute: 'valid_time',
+                    isEpoch: true,
+                    showAllOnStart: true,
+                    alwaysShowDate: true
+                });
+
+                map.addControl(sliderControl);
+                sliderControl.startSlider();
             }
-    
-            console.log(`Loaded ${pointCount} snowfall points.`);
         }
 
-    
         function loadData() {
             fetch('https://www.weather.gov/source/crh/lsr_snow.geojson')
                 .then(response => {
@@ -317,7 +540,6 @@
                     console.log('Raw API data:', data);
                     loadGeoJSON(data);
                     
-                    // Update generation time
                     const generationTime = new Date(data.generation_time);
                     const formattedTime = generationTime.toLocaleString('en-US', {
                         year: 'numeric',
@@ -329,7 +551,6 @@
                         timeZoneName: 'short'
                     });
                     document.getElementById('generationTime').textContent = `Data as of ${formattedTime}`;
-
                 })
                 .catch(error => {
                     console.error('Error loading data:', error);
@@ -337,11 +558,7 @@
                 });
         }
 
-    
-        // Load data when page loads
         loadData();
-        
-        // Auto-refresh every 15 minutes
         setInterval(loadData, 5 * 60 * 1000);
     </script>
 </body>
